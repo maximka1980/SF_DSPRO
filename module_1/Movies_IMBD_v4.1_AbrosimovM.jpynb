@@ -1,0 +1,1937 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 83,
+   "metadata": {
+    "_cell_guid": "b1076dfc-b9ad-4769-8c92-a6c4dae69d19",
+    "_uuid": "8f2839f25d086af736a60e9eeb907d3b93b6e0e5",
+    "colab": {},
+    "colab_type": "code",
+    "id": "U2D2gTdJVp90"
+   },
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "import pandas as pd\n",
+    "import seaborn as sns\n",
+    "import matplotlib.pyplot as plt\n",
+    "from collections import Counter\n",
+    "import collections"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 84,
+   "metadata": {
+    "_cell_guid": "79c7e3d0-c299-4dcb-8224-4455121ee9b0",
+    "_uuid": "d629ff2d2480ee46fbb7e2d37f6b5fab8052498a",
+    "colab": {},
+    "colab_type": "code",
+    "id": "oyGfxL3eVp9-"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>imdb_id</th>\n",
+       "      <th>budget</th>\n",
+       "      <th>revenue</th>\n",
+       "      <th>original_title</th>\n",
+       "      <th>cast</th>\n",
+       "      <th>director</th>\n",
+       "      <th>tagline</th>\n",
+       "      <th>overview</th>\n",
+       "      <th>runtime</th>\n",
+       "      <th>genres</th>\n",
+       "      <th>production_companies</th>\n",
+       "      <th>release_date</th>\n",
+       "      <th>vote_average</th>\n",
+       "      <th>release_year</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>1000</th>\n",
+       "      <td>tt1915581</td>\n",
+       "      <td>7000000</td>\n",
+       "      <td>167221571</td>\n",
+       "      <td>Magic Mike</td>\n",
+       "      <td>Channing Tatum|Matthew McConaughey|Olivia Munn...</td>\n",
+       "      <td>Steven Soderbergh</td>\n",
+       "      <td>Work all day. Work it all night.</td>\n",
+       "      <td>Mike, an experienced stripper, takes a younger...</td>\n",
+       "      <td>110</td>\n",
+       "      <td>Drama|Comedy</td>\n",
+       "      <td>Nick Wechsler Productions|Extension 765</td>\n",
+       "      <td>6/28/2012</td>\n",
+       "      <td>6.1</td>\n",
+       "      <td>2012</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>481</th>\n",
+       "      <td>tt1302067</td>\n",
+       "      <td>80000000</td>\n",
+       "      <td>201584141</td>\n",
+       "      <td>Yogi Bear</td>\n",
+       "      <td>Dan Aykroyd|Justin Timberlake|Anna Faris|Tom C...</td>\n",
+       "      <td>Eric Brevig</td>\n",
+       "      <td>Life's a Pic-A-Nic</td>\n",
+       "      <td>Jellystone Park has been losing business, so g...</td>\n",
+       "      <td>80</td>\n",
+       "      <td>Comedy|Family|Animation|Adventure</td>\n",
+       "      <td>De Line Pictures|Warner Bros. Animation|Sunswe...</td>\n",
+       "      <td>12/11/2010</td>\n",
+       "      <td>5.1</td>\n",
+       "      <td>2010</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1647</th>\n",
+       "      <td>tt0327437</td>\n",
+       "      <td>110000000</td>\n",
+       "      <td>72178895</td>\n",
+       "      <td>Around the World in 80 Days</td>\n",
+       "      <td>Jackie Chan|Steve Coogan|CÃ©cile De France|Rob...</td>\n",
+       "      <td>Frank Coraci</td>\n",
+       "      <td>Let your imagination soar.</td>\n",
+       "      <td>A bet pits a British inventor, a Chinese thief...</td>\n",
+       "      <td>120</td>\n",
+       "      <td>Action|Adventure|Comedy</td>\n",
+       "      <td>Studio Babelsberg|Walden Media|Babelsberg Film...</td>\n",
+       "      <td>6/16/2004</td>\n",
+       "      <td>5.6</td>\n",
+       "      <td>2004</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1008</th>\n",
+       "      <td>tt1482459</td>\n",
+       "      <td>70000000</td>\n",
+       "      <td>348840316</td>\n",
+       "      <td>The Lorax</td>\n",
+       "      <td>Zac Efron|Danny DeVito|Taylor Swift|Ed Helms|R...</td>\n",
+       "      <td>Chris Renaud|Kyle Balda</td>\n",
+       "      <td>Meet The Original Force Of Nature</td>\n",
+       "      <td>A 12-year-old boy searches for the one thing t...</td>\n",
+       "      <td>86</td>\n",
+       "      <td>Animation|Family</td>\n",
+       "      <td>Universal Pictures|Illumination Entertainment</td>\n",
+       "      <td>3/1/2012</td>\n",
+       "      <td>6.3</td>\n",
+       "      <td>2012</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1782</th>\n",
+       "      <td>tt0469623</td>\n",
+       "      <td>16000000</td>\n",
+       "      <td>2849142</td>\n",
+       "      <td>Things We Lost in the Fire</td>\n",
+       "      <td>Halle Berry|Benicio del Toro|David Duchovny|Al...</td>\n",
+       "      <td>Susanne Bier</td>\n",
+       "      <td>Hope comes with letting go.</td>\n",
+       "      <td>A recent widow invites her husband's troubled ...</td>\n",
+       "      <td>113</td>\n",
+       "      <td>Drama</td>\n",
+       "      <td>DreamWorks SKG|Neal Street Productions|DreamWo...</td>\n",
+       "      <td>9/26/2007</td>\n",
+       "      <td>6.5</td>\n",
+       "      <td>2007</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "        imdb_id     budget    revenue               original_title  \\\n",
+       "1000  tt1915581    7000000  167221571                   Magic Mike   \n",
+       "481   tt1302067   80000000  201584141                    Yogi Bear   \n",
+       "1647  tt0327437  110000000   72178895  Around the World in 80 Days   \n",
+       "1008  tt1482459   70000000  348840316                    The Lorax   \n",
+       "1782  tt0469623   16000000    2849142   Things We Lost in the Fire   \n",
+       "\n",
+       "                                                   cast  \\\n",
+       "1000  Channing Tatum|Matthew McConaughey|Olivia Munn...   \n",
+       "481   Dan Aykroyd|Justin Timberlake|Anna Faris|Tom C...   \n",
+       "1647  Jackie Chan|Steve Coogan|CÃ©cile De France|Rob...   \n",
+       "1008  Zac Efron|Danny DeVito|Taylor Swift|Ed Helms|R...   \n",
+       "1782  Halle Berry|Benicio del Toro|David Duchovny|Al...   \n",
+       "\n",
+       "                     director                            tagline  \\\n",
+       "1000        Steven Soderbergh   Work all day. Work it all night.   \n",
+       "481               Eric Brevig                 Life's a Pic-A-Nic   \n",
+       "1647             Frank Coraci         Let your imagination soar.   \n",
+       "1008  Chris Renaud|Kyle Balda  Meet The Original Force Of Nature   \n",
+       "1782             Susanne Bier        Hope comes with letting go.   \n",
+       "\n",
+       "                                               overview  runtime  \\\n",
+       "1000  Mike, an experienced stripper, takes a younger...      110   \n",
+       "481   Jellystone Park has been losing business, so g...       80   \n",
+       "1647  A bet pits a British inventor, a Chinese thief...      120   \n",
+       "1008  A 12-year-old boy searches for the one thing t...       86   \n",
+       "1782  A recent widow invites her husband's troubled ...      113   \n",
+       "\n",
+       "                                 genres  \\\n",
+       "1000                       Drama|Comedy   \n",
+       "481   Comedy|Family|Animation|Adventure   \n",
+       "1647            Action|Adventure|Comedy   \n",
+       "1008                   Animation|Family   \n",
+       "1782                              Drama   \n",
+       "\n",
+       "                                   production_companies release_date  \\\n",
+       "1000            Nick Wechsler Productions|Extension 765    6/28/2012   \n",
+       "481   De Line Pictures|Warner Bros. Animation|Sunswe...   12/11/2010   \n",
+       "1647  Studio Babelsberg|Walden Media|Babelsberg Film...    6/16/2004   \n",
+       "1008      Universal Pictures|Illumination Entertainment     3/1/2012   \n",
+       "1782  DreamWorks SKG|Neal Street Productions|DreamWo...    9/26/2007   \n",
+       "\n",
+       "      vote_average  release_year  \n",
+       "1000           6.1          2012  \n",
+       "481            5.1          2010  \n",
+       "1647           5.6          2004  \n",
+       "1008           6.3          2012  \n",
+       "1782           6.5          2007  "
+      ]
+     },
+     "execution_count": 84,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "data = pd.read_csv('movie_bd_v5.csv')\n",
+    "data.sample(5)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 85,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "CoYUnagMVp-C"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>budget</th>\n",
+       "      <th>revenue</th>\n",
+       "      <th>runtime</th>\n",
+       "      <th>vote_average</th>\n",
+       "      <th>release_year</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>count</th>\n",
+       "      <td>1.889000e+03</td>\n",
+       "      <td>1.889000e+03</td>\n",
+       "      <td>1889.000000</td>\n",
+       "      <td>1889.000000</td>\n",
+       "      <td>1889.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>mean</th>\n",
+       "      <td>5.431083e+07</td>\n",
+       "      <td>1.553653e+08</td>\n",
+       "      <td>109.658549</td>\n",
+       "      <td>6.140762</td>\n",
+       "      <td>2007.860773</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>std</th>\n",
+       "      <td>4.858721e+07</td>\n",
+       "      <td>2.146698e+08</td>\n",
+       "      <td>18.017041</td>\n",
+       "      <td>0.764763</td>\n",
+       "      <td>4.468841</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>min</th>\n",
+       "      <td>5.000000e+06</td>\n",
+       "      <td>2.033165e+06</td>\n",
+       "      <td>63.000000</td>\n",
+       "      <td>3.300000</td>\n",
+       "      <td>2000.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>25%</th>\n",
+       "      <td>2.000000e+07</td>\n",
+       "      <td>3.456058e+07</td>\n",
+       "      <td>97.000000</td>\n",
+       "      <td>5.600000</td>\n",
+       "      <td>2004.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>50%</th>\n",
+       "      <td>3.800000e+07</td>\n",
+       "      <td>8.361541e+07</td>\n",
+       "      <td>107.000000</td>\n",
+       "      <td>6.100000</td>\n",
+       "      <td>2008.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>75%</th>\n",
+       "      <td>7.200000e+07</td>\n",
+       "      <td>1.782626e+08</td>\n",
+       "      <td>120.000000</td>\n",
+       "      <td>6.600000</td>\n",
+       "      <td>2012.000000</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>max</th>\n",
+       "      <td>3.800000e+08</td>\n",
+       "      <td>2.781506e+09</td>\n",
+       "      <td>214.000000</td>\n",
+       "      <td>8.100000</td>\n",
+       "      <td>2015.000000</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "             budget       revenue      runtime  vote_average  release_year\n",
+       "count  1.889000e+03  1.889000e+03  1889.000000   1889.000000   1889.000000\n",
+       "mean   5.431083e+07  1.553653e+08   109.658549      6.140762   2007.860773\n",
+       "std    4.858721e+07  2.146698e+08    18.017041      0.764763      4.468841\n",
+       "min    5.000000e+06  2.033165e+06    63.000000      3.300000   2000.000000\n",
+       "25%    2.000000e+07  3.456058e+07    97.000000      5.600000   2004.000000\n",
+       "50%    3.800000e+07  8.361541e+07   107.000000      6.100000   2008.000000\n",
+       "75%    7.200000e+07  1.782626e+08   120.000000      6.600000   2012.000000\n",
+       "max    3.800000e+08  2.781506e+09   214.000000      8.100000   2015.000000"
+      ]
+     },
+     "execution_count": 85,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "data.describe()"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "DTIt7ezGVp-G"
+   },
+   "source": [
+    "# Предобработка"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 86,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "jNb40DwKVp-H"
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "C:\\Users\\User\\anaconda3\\lib\\site-packages\\pandas\\core\\generic.py:5303: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  self[name] = value\n"
+     ]
+    }
+   ],
+   "source": [
+    "answers = {} # создадим словарь для ответов\n",
+    "\n",
+    "# тут другие ваши предобработки колонок например:\n",
+    "# создаем новую колонку \"профит\" в загруженном датафрейме и записываем в нее результат \n",
+    "data['profit']=data['revenue']-data['budget']\n",
+    "\n",
+    "#вопрос 15\n",
+    "data_2012 = data[data.release_year == 2012]    #отбор в новый дa по году\n",
+    "data_2012.cast = data_2012.cast.str.split('|') #разбиваем разделителем\n",
+    "data_2012 = data_2012.explode('cast')          #взрываем строки по полю cast\n",
+    "\n",
+    "#вопрос17\n",
+    "'''формируем датафрейм по условию участия в нем нужного актера что бы не сплитовать \n",
+    "даныне по акттерам используем метод contains'''\n",
+    "df_nik = data[data.cast.str.contains ('Nicolas Cage')]\n",
+    "\n",
+    "#сплитуем данные по жанрам \n",
+    "df_nik.genres = df_nik.genres.str.split('|')\n",
+    "df_nik = df_nik.explode('genres')\n",
+    "\n",
+    "#the time given in the dataset is in string format.\n",
+    "#So we need to change this in datetime format\n",
+    "# ...\n",
+    "genres_list = data.genres.str.split('|').sum()  # создаем список всех жанров\n",
+    "genres_unique = []                              # создаем новый список жанров, \"очищенный\" от дубликатов\n",
+    "\n",
+    "#вопрос 16\n",
+    "#формируем отдельный датафрейм по полям\n",
+    "df_budget = data[['cast','budget','original_title']]\n",
+    "#сплитуем по полюс каст и взрываем\n",
+    "df_budget.cast = df_budget.cast.str.split('|')\n",
+    "df_budget = df_budget.explode('cast')\n",
+    "\n",
+    "def genres_max():\n",
+    "    \n",
+    "    return df_genres[df_genres['count']==df_genres['count'].max()]\n",
+    "\n",
+    "#функция конвертации номера месяца в удобочитаемый формат\n",
+    "def m(a):\n",
+    "    if a==1:\n",
+    "        return \"Январь\"\n",
+    "    elif a==2:\n",
+    "        return\"Февраль\"\n",
+    "    elif a== 3:\n",
+    "        return \"Март\"\n",
+    "    elif   a == 4:\n",
+    "        return \"Апрель\"\n",
+    "    elif  a == 5:\n",
+    "        return \"Май\"\n",
+    "    elif  a == 6:\n",
+    "        return \"Июнь\"\n",
+    "    elif  a == 7:\n",
+    "        return \"Июль\"\n",
+    "    elif a == 8:\n",
+    "        return \"Август\"\n",
+    "    elif a==9:\n",
+    "        return \"Сентябрь\"\n",
+    "    elif a==10:\n",
+    "        return \"Октябрь\"\n",
+    "    elif a==11:\n",
+    "        return \"Ноябрь\"\n",
+    "    elif a==12:\n",
+    "        return \"Декабрь\"\n",
+    "#функция вычисления длинны ячейки    \n",
+    "def maxlen(i):\n",
+    "    return len(i)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "YxZaH-nPVp-L"
+   },
+   "source": [
+    "# 1. У какого фильма из списка самый большой бюджет?"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "Nd-G5gX6Vp-M"
+   },
+   "source": [
+    "Использовать варианты ответов в коде решения запрещено.    \n",
+    "Вы думаете и в жизни у вас будут варианты ответов?)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 87,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "uVnXAY5RVp-O"
+   },
+   "outputs": [],
+   "source": [
+    "# в словарь вставляем номер вопроса и ваш ответ на него\n",
+    "# Пример: \n",
+    "answers['1'] = '2. Spider-Man 3 (tt0413300)'\n",
+    "# запишите свой вариант ответа\n",
+    "answers['1'] = '...'\n",
+    "# если ответили верно, можете добавить комментарий со значком \"+\""
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 120,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "dZwb3m28Vp-S"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Pirates of the Caribbean: On Stranger Tides'"
+      ]
+     },
+     "execution_count": 120,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# тут пишем ваш код для решения данного вопроса:\n",
+    "\n",
+    "answers['1']=data[data.budget==data.budget.max()].original_title.iloc[0]\n",
+    "answers['1']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "K7L3nbRXVp-X"
+   },
+   "source": [
+    "ВАРИАНТ 2"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 89,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "OGaoQI7rVp-X"
+   },
+   "outputs": [],
+   "source": [
+    "# можно добавлять разные варианты решения"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "FNRbbI3vVp-c"
+   },
+   "source": [
+    "# 2. Какой из фильмов самый длительный (в минутах)?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 90,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "vHAoEXNTVp-d"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Gods and Generals'"
+      ]
+     },
+     "execution_count": 90,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# думаю логику работы с этим словарем вы уже поняли, \n",
+    "# по этому не буду больше его дублировать\n",
+    "answers['2']=data[data.runtime==data.runtime.max()].original_title.iloc[0]\n",
+    "answers['2']\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "ot-VX2XrVp-g"
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "bapLlpW8Vp-k"
+   },
+   "source": [
+    "# 3. Какой из фильмов самый короткий (в минутах)?\n",
+    "\n",
+    "\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 91,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "YBxaSHuAVp-l"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Winnie the Pooh'"
+      ]
+     },
+     "execution_count": 91,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "answers['3']=data[data.runtime==data.runtime.min()].original_title.iloc[0]\n",
+    "answers['3']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "TfQbxbfNVp-p"
+   },
+   "source": [
+    "# 4. Какова средняя длительность фильмов?\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 92,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "5K6dKZYVVp-q"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "110"
+      ]
+     },
+     "execution_count": 92,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "answers['4']=round(data.runtime.mean())\n",
+    "answers['4']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "r5TvbnT_Vp-u"
+   },
+   "source": [
+    "# 5. Каково медианное значение длительности фильмов? "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 93,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "iBROplKnVp-v"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "107"
+      ]
+     },
+     "execution_count": 93,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "answers['5']=round(data.runtime.median())\n",
+    "answers['5']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "39P-deDSVp-y"
+   },
+   "source": [
+    "# 6. Какой самый прибыльный фильм?\n",
+    "#### Внимание! Здесь и далее под «прибылью» или «убытками» понимается разность между сборами и бюджетом фильма. (прибыль = сборы - бюджет) в нашем датасете это будет (profit = revenue - budget) "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 94,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "UYZh4T9WVp-y"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Avatar'"
+      ]
+     },
+     "execution_count": 94,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# лучше код получения столбца profit вынести в Предобработку что в начале\n",
+    "answers['6'] = data[data.profit==data.profit.max()].original_title.iloc[0]\n",
+    "answers['6']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "M99JmIX4Vp-2"
+   },
+   "source": [
+    "# 7. Какой фильм самый убыточный? "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 95,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "w-D2m4XPVp-3"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'The Lone Ranger'"
+      ]
+     },
+     "execution_count": 95,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "answers['7'] = data[data.profit==data.profit.min()].original_title.iloc[0]\n",
+    "answers['7']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "wEOM5ERVVp-6"
+   },
+   "source": [
+    "# 8. У скольких фильмов из датасета объем сборов оказался выше бюджета?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 96,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "y00_7HD6Vp-7"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "1478"
+      ]
+     },
+     "execution_count": 96,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "answers['8'] = len(data[data.revenue > data.budget])\n",
+    "answers['8']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "xhpspA9KVp_A"
+   },
+   "source": [
+    "# 9. Какой фильм оказался самым кассовым в 2008 году?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 97,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "MoUyQr9RVp_B"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'The Dark Knight'"
+      ]
+     },
+     "execution_count": 97,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "answers['9'] = data[(data.vote_average==data.vote_average.max()) & (data.release_year==2008)]['original_title'].iloc[0]\n",
+    "answers['9']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "Zi4hDKidVp_F"
+   },
+   "source": [
+    "# 10. Самый убыточный фильм за период с 2012 по 2014 г. (включительно)?\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 98,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "XqyRmufJVp_F"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'The Lone Ranger'"
+      ]
+     },
+     "execution_count": 98,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "answers['10'] = data[(data.profit==data.profit.min()) & (data.release_year>=2012) & (data.release_year<=2014)]['original_title'].iloc[0]\n",
+    "answers['10']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "EA7Sa9dkVp_I"
+   },
+   "source": [
+    "# 11. Какого жанра фильмов больше всего?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 125,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "zsJAwJ8QVp_J"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Drama'"
+      ]
+     },
+     "execution_count": 125,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# эту задачу тоже можно решать разными подходами, попробуй реализовать разные варианты\n",
+    "# если будешь добавлять функцию - выноси ее в предобработку что в начале\n",
+    "\n",
+    "\n",
+    "answers['11']=genres_max().genres.iloc[0]\n",
+    "answers['11']\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "Ax6g2C8SVp_M"
+   },
+   "source": [
+    "ВАРИАНТ 2"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "otO3SbrSVp_N"
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "T9_bPWpkVp_Q"
+   },
+   "source": [
+    "# 12. Фильмы какого жанра чаще всего становятся прибыльными? "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 117,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "Tmt8MaK1Vp_R"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Drama'"
+      ]
+     },
+     "execution_count": 117,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df = data[data.profit > 0][['genres']] #получаем датафрейм с жанрами кто заработал\n",
+    "df.genres = df.genres.str.split('|')   #делим на жанры через разделитель\n",
+    "df = df.explode('genres')              #используем функцию explode что бы разбить на строки с уникальными полями\n",
+    "df2=df.genres.value_counts()\n",
+    "\n",
+    "answers['12']= df2[df2==df2.max()].index[0]    # тот жанр у кого чаще всего прибыль\n",
+    "answers['12']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "0F23bgsDVp_U"
+   },
+   "source": [
+    "# 13. У какого режиссера самые большие суммарные кассовые сборы?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 101,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "K6Z3J8ygVp_X"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Peter Jackson'"
+      ]
+     },
+     "execution_count": 101,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# используем групповую обработку по режиссерам и суммируем по выручке + сортировка по убыванию\n",
+    "data_director_rev = data.groupby(['director'])['revenue'].sum().sort_values(ascending = False)\n",
+    "answers['13'] = data_director_rev.loc[[data_director_rev.idxmax()]].index[0] #выбираем по индексу режиссера\n",
+    "answers['13']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "PsYC9FgRVp_a"
+   },
+   "source": [
+    "# 14. Какой режисер снял больше всего фильмов в стиле Action?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 102,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "wd2M-wHeVp_b"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Robert Rodriguez'"
+      ]
+     },
+     "execution_count": 102,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# фильтрация датафрейма по наличию жанра и сплита директоров через разделитель\n",
+    "data_genres_action = data[data.genres.str.contains('Action')].director.str.split('|').explode().value_counts()\n",
+    "answers['14'] = data_genres_action[data_genres_action==data_genres_action.max()].index[0]\n",
+    "answers['14']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "PQ0KciD7Vp_f"
+   },
+   "source": [
+    "# 15. Фильмы с каким актером принесли самые высокие кассовые сборы в 2012 году? "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 103,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "aga62oeKVp_g"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Chris Hemsworth'"
+      ]
+     },
+     "execution_count": 103,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "\n",
+    "\n",
+    "#преобразуем результат группировки по полю cast с суммированием сборов и сортировкой по убыванию\n",
+    "df = pd.DataFrame(data_2012.groupby(['cast']).revenue.sum().sort_values(ascending = False)) \n",
+    "\n",
+    "answers['15']=df.index[0] #берем 0 индекс в дата фрейме где и находится ответ\n",
+    "answers['15']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "mWHyyL7QVp_j"
+   },
+   "source": [
+    "# 16. Какой актер снялся в большем количестве высокобюджетных фильмов?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 104,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "qQtmHKTFVp_k"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Matt Damon'"
+      ]
+     },
+     "execution_count": 104,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "\n",
+    "#формируем датафрейм по условию высокобюджетных фильмов \n",
+    "df = df_budget[df_budget.budget > df_budget.budget.mean()]['cast']\n",
+    "\n",
+    "df2=pd.DataFrame(df.value_counts())\n",
+    "answers['16']=df2.index[0]\n",
+    "answers['16']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "NIh6AaW5Vp_n"
+   },
+   "source": [
+    "# 17. В фильмах какого жанра больше всего снимался Nicolas Cage? "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 105,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "H74SJDIBVp_n"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'Action'"
+      ]
+     },
+     "execution_count": 105,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "\n",
+    "#формируем датафрейм из серии и берем макс значение \n",
+    "df2 = pd.DataFrame(df_nik.genres.value_counts())\n",
+    "answers['17']=df2.index[0]\n",
+    "answers['17']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "RqOmPRfWVp_q"
+   },
+   "source": [
+    "# 18. Самый убыточный фильм от Paramount Pictures"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 106,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "9E_B0Y96Vp_r"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "'K-19: The Widowmaker'"
+      ]
+     },
+     "execution_count": 106,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#выборка по компании\n",
+    "df = data[data.production_companies.str.contains('Paramount Pictures')]\n",
+    "#abkmnhfwbz данных\n",
+    "df2=df[df.profit==df.profit.min()]\n",
+    "answers['18']=df2.iloc[0].original_title\n",
+    "answers['18']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "vS8Ur6ddVp_u"
+   },
+   "source": [
+    "# 19. Какой год стал самым успешным по суммарным кассовым сборам?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 107,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "Dnbt4GdIVp_v"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "2015"
+      ]
+     },
+     "execution_count": 107,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#выборка по компании\n",
+    "df = pd.DataFrame(data.groupby(['release_year']).profit.sum().sort_values(ascending = False))\n",
+    "answers['19'] = df.index[0]\n",
+    "answers['19']\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "JAzJh4QAVp_z"
+   },
+   "source": [
+    "# 20. Какой самый прибыльный год для студии Warner Bros?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 108,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "wgVu02DEVp_0"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "2014"
+      ]
+     },
+     "execution_count": 108,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#выборка по компании\n",
+    "df = data[data.production_companies.str.contains('Warner Bros')]\n",
+    "#конвертируем в датафрейм результат группировки и сортировки\n",
+    "df2 = pd.DataFrame(df.groupby(['release_year']).profit.sum().sort_values(ascending = False))\n",
+    "answers['20'] = df2.index[0]\n",
+    "answers['20']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "8Im1S2HRVp_4"
+   },
+   "source": [
+    "# 21. В каком месяце за все годы суммарно вышло больше всего фильмов?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 109,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "lev6TH7gVp_4"
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "<ipython-input-109-a6f71b0d5bb0>:4: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  df['month'] = df.release_date.str.split('/', n=3, expand = True)[0]\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "'Сентябрь'"
+      ]
+     },
+     "execution_count": 109,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#создаем новый дф по двум полям\n",
+    "df = data[['release_date','imdb_id']]\n",
+    "#добавляем новую колонку и сплитуем с выбором результата по индексу месяца\n",
+    "df['month'] = df.release_date.str.split('/', n=3, expand = True)[0]\n",
+    "#конвертируем в датафрейм результат группировки и сортировки\n",
+    "df2 = pd.DataFrame(df.month.value_counts().sort_values(ascending=False))\n",
+    "#применяем функцию определения месяца в читаемом формате \n",
+    "answers['21'] = m(int(df2.index[0]))\n",
+    "answers['21']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "uAJsZ_NeVp_7"
+   },
+   "source": [
+    "# 22. Сколько суммарно вышло фильмов летом? (за июнь, июль, август)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 110,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "Aa-hEREoVp_8"
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "<ipython-input-110-3277dd215710>:5: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  df['month'] = df.release_date.str.split('/', n=3, expand = True)[0]\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "450"
+      ]
+     },
+     "execution_count": 110,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#сформировали новы дф по датам и id фильмов\n",
+    "df = data[['release_date','imdb_id']]\n",
+    "\n",
+    "#разпарсили месяцы в отдельную колонку датафрейма\n",
+    "df['month'] = df.release_date.str.split('/', n=3, expand = True)[0]\n",
+    "#сформировали отдельный дф с уникальными значениями по каждому месяцу, сбросили индексы\n",
+    "df2 = pd.DataFrame(df.month.value_counts().sort_values(ascending=False)).reset_index()\n",
+    "#переназначем индексы с новыми именами для удобства доступа\n",
+    "df2 = df2.rename(columns={'index':'month', 'month':'counter'})\n",
+    "#jn,jh данных по условию и суммирование по полю\n",
+    "df2[df2['month'].isin(['6','7','8'])].counter.sum()\n",
+    "answers['22'] = df2[df2['month'].isin(['6','7','8'])].counter.sum()\n",
+    "answers['22']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "G94ppOY1VqAA"
+   },
+   "source": [
+    "# 23. Для какого режиссера зима – самое продуктивное время года? "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 111,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "RhNTsamuVqAB"
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "<ipython-input-111-f1ba176a25ea>:5: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  df['month'] = df['release_date'].str.split('/', n=3, expand=True)[0]\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "'Peter Jackson'"
+      ]
+     },
+     "execution_count": 111,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "'''cамое продуктивное время года, время года в котором вышли больше всего фильмов! найдем соотвтетсвие '''\n",
+    "#сформировали новый дф по датам и режисерам \n",
+    "df = data[['release_date','director']]\n",
+    "#через сплит разбираем поле даты и размещаем в новую колонку, берем только 0 элемент который меся\n",
+    "df['month'] = df['release_date'].str.split('/', n=3, expand=True)[0]\n",
+    "#создаем новый дф с месяцем и режиссером\n",
+    "df = df[['month','director']]\n",
+    "#ерез сплит разбираем поле жежиссеров и размещаем в новую колонку далее взрываем через explode\n",
+    "df.director = df.director.str.split('|')\n",
+    "df = df.explode('director')\n",
+    "#формируем новую колонку для всех записей равную 1 которая будет фыполнять функцию счетчика \n",
+    "df['counter'] = 1\n",
+    "#фильтруем данные и группируем применяя агрегирующую функцию суммирования по полю счетчика\n",
+    "df[df.month.isin(['12','1','2'])].groupby(['director'])['counter'].sum().sort_values(ascending=False)\n",
+    "#т.к. выше была проведена сортировка по убыванию, берем элемент 0 индекса который будет содержать ответ\n",
+    "answers['23'] = df[df.month.isin(['12','1','2'])].groupby(['director'])['counter'].sum().sort_values(ascending=False).index[0]\n",
+    "answers['23']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "RBo0JVjVVqAF"
+   },
+   "source": [
+    "# 24. Какая студия дает самые длинные названия своим фильмам по количеству символов?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 112,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "QRGS8L0iVqAG"
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "<ipython-input-112-8d20afef822d>:5: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  data_len['title_len'] = data_len.original_title.apply(len)\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "'Four By Two Productions'"
+      ]
+     },
+     "execution_count": 112,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#формируем датафрейм по компаниям и названиям\n",
+    "data_len = data[['production_companies','original_title']]\n",
+    "\n",
+    "#применяем стандартную функцию поиска длинны к полю названия фильма\n",
+    "data_len['title_len'] = data_len.original_title.apply(len)\n",
+    "\n",
+    "#уже станадртная функция разбивки по разделителю\n",
+    "data_len.production_companies = data_len.production_companies.str.split('|')\n",
+    "#привычный нам эксплод, для получения строк с разными компаниями\n",
+    "data_len = data_len.explode('production_companies')\n",
+    "#группировка по компаниям с поиском среднего значния длинны названий (высокое среднее значения \n",
+    "#дает самые длинные название я всреднем)\n",
+    "#стандартной функцией с последующей сортировкой полученных значений\n",
+    "data_len = data_len.groupby(['production_companies'])['title_len'].mean().sort_values(ascending = False)\n",
+    "#берем первый элемент с индексом 0 и помещаем в переменную списка с ответом\n",
+    "answers['24'] = data_len.index[0]\n",
+    "answers['24']\n",
+    "\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "9G0hbvR7VqAK"
+   },
+   "source": [
+    "# 25. Описание фильмов какой студии в среднем самые длинные по количеству слов?"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 113,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "Ge2GsLNxVqAK"
+   },
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "<ipython-input-113-0cd44f57278b>:4: SettingWithCopyWarning: \n",
+      "A value is trying to be set on a copy of a slice from a DataFrame.\n",
+      "Try using .loc[row_indexer,col_indexer] = value instead\n",
+      "\n",
+      "See the caveats in the documentation: https://pandas.pydata.org/pandas-docs/stable/user_guide/indexing.html#returning-a-view-versus-a-copy\n",
+      "  df_o['overview_mean_len'] = df_o.overview.str.split(' ').apply(len)\n"
+     ]
+    },
+    {
+     "data": {
+      "text/plain": [
+       "'Midnight Picture Show'"
+      ]
+     },
+     "execution_count": 113,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "#формируем датафрейм по компаниям и описаниям\n",
+    "df_o= data[['production_companies','overview']]\n",
+    "#считаем кол-во слов в описании и помещаем их в отдельную ячейку\n",
+    "df_o['overview_mean_len'] = df_o.overview.str.split(' ').apply(len)\n",
+    "#уже станадртная функция разбивки по разделителю \n",
+    "df_o.production_companies = df_o.production_companies.str.split('|') \n",
+    "df_o = df_o.explode('production_companies') #explode по компаниям\n",
+    "#группировка по компаниям с подсчетом среднего значения в ячейки длинны описания и сортировкой\n",
+    "df_o = df_o.groupby(['production_companies'])['overview_mean_len'].mean().sort_values(ascending = False)\n",
+    "  \n",
+    "answers['25'] = df_o.index[0]\n",
+    "answers['25']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "FJ1AFt90VqAP"
+   },
+   "source": [
+    "# 26. Какие фильмы входят в 1 процент лучших по рейтингу? \n",
+    "по vote_average"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 114,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "8qmJVq4CVqAQ"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/html": [
+       "<div>\n",
+       "<style scoped>\n",
+       "    .dataframe tbody tr th:only-of-type {\n",
+       "        vertical-align: middle;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe tbody tr th {\n",
+       "        vertical-align: top;\n",
+       "    }\n",
+       "\n",
+       "    .dataframe thead th {\n",
+       "        text-align: right;\n",
+       "    }\n",
+       "</style>\n",
+       "<table border=\"1\" class=\"dataframe\">\n",
+       "  <thead>\n",
+       "    <tr style=\"text-align: right;\">\n",
+       "      <th></th>\n",
+       "      <th>original_title</th>\n",
+       "      <th>vote_average</th>\n",
+       "    </tr>\n",
+       "  </thead>\n",
+       "  <tbody>\n",
+       "    <tr>\n",
+       "      <th>0</th>\n",
+       "      <td>The Dark Knight</td>\n",
+       "      <td>8.1</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>1</th>\n",
+       "      <td>The Imitation Game</td>\n",
+       "      <td>8.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>2</th>\n",
+       "      <td>Inside Out</td>\n",
+       "      <td>8.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>3</th>\n",
+       "      <td>Interstellar</td>\n",
+       "      <td>8.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>4</th>\n",
+       "      <td>Room</td>\n",
+       "      <td>8.0</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>5</th>\n",
+       "      <td>The Grand Budapest Hotel</td>\n",
+       "      <td>7.9</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>6</th>\n",
+       "      <td>The Pianist</td>\n",
+       "      <td>7.9</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>7</th>\n",
+       "      <td>Guardians of the Galaxy</td>\n",
+       "      <td>7.9</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>8</th>\n",
+       "      <td>Memento</td>\n",
+       "      <td>7.9</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>9</th>\n",
+       "      <td>The Wolf of Wall Street</td>\n",
+       "      <td>7.9</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>10</th>\n",
+       "      <td>Inception</td>\n",
+       "      <td>7.9</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>11</th>\n",
+       "      <td>Gone Girl</td>\n",
+       "      <td>7.9</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>12</th>\n",
+       "      <td>12 Years a Slave</td>\n",
+       "      <td>7.9</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>13</th>\n",
+       "      <td>The Lord of the Rings: The Return of the King</td>\n",
+       "      <td>7.9</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>14</th>\n",
+       "      <td>Prisoners</td>\n",
+       "      <td>7.8</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>15</th>\n",
+       "      <td>The Fault in Our Stars</td>\n",
+       "      <td>7.8</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>16</th>\n",
+       "      <td>Eternal Sunshine of the Spotless Mind</td>\n",
+       "      <td>7.8</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>17</th>\n",
+       "      <td>The Prestige</td>\n",
+       "      <td>7.8</td>\n",
+       "    </tr>\n",
+       "    <tr>\n",
+       "      <th>18</th>\n",
+       "      <td>The Lord of the Rings: The Fellowship of the Ring</td>\n",
+       "      <td>7.8</td>\n",
+       "    </tr>\n",
+       "  </tbody>\n",
+       "</table>\n",
+       "</div>"
+      ],
+      "text/plain": [
+       "                                       original_title  vote_average\n",
+       "0                                     The Dark Knight           8.1\n",
+       "1                                  The Imitation Game           8.0\n",
+       "2                                          Inside Out           8.0\n",
+       "3                                        Interstellar           8.0\n",
+       "4                                                Room           8.0\n",
+       "5                            The Grand Budapest Hotel           7.9\n",
+       "6                                         The Pianist           7.9\n",
+       "7                             Guardians of the Galaxy           7.9\n",
+       "8                                             Memento           7.9\n",
+       "9                             The Wolf of Wall Street           7.9\n",
+       "10                                          Inception           7.9\n",
+       "11                                          Gone Girl           7.9\n",
+       "12                                   12 Years a Slave           7.9\n",
+       "13      The Lord of the Rings: The Return of the King           7.9\n",
+       "14                                          Prisoners           7.8\n",
+       "15                             The Fault in Our Stars           7.8\n",
+       "16              Eternal Sunshine of the Spotless Mind           7.8\n",
+       "17                                       The Prestige           7.8\n",
+       "18  The Lord of the Rings: The Fellowship of the Ring           7.8"
+      ]
+     },
+     "execution_count": 114,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "df_va = data[['original_title','vote_average']]\n",
+    "df_va = df_va.groupby(['original_title'])['vote_average'].max().sort_values(ascending = False)\n",
+    "df_va = pd.DataFrame(df_va).reset_index()\n",
+    "df_va.iloc[0:round(0.01*len(df_va))]\n",
+    "answers['26'] = df_va.iloc[0:round(0.01*len(df_va))]\n",
+    "answers['26']"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "MdXsUXbCVqAV"
+   },
+   "source": [
+    "# 27. Какие актеры чаще всего снимаются в одном фильме вместе?\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "4ymnxEVoVqAW"
+   },
+   "source": [
+    "ВАРИАНТ 2"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "colab_type": "text",
+    "id": "U0nONFnGVqAX"
+   },
+   "source": [
+    "# Submission"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 126,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "IfcaRO9-VqAX",
+    "outputId": "0f132912-32bb-4196-c98c-abfbc4ad5a5f"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "{'1': 'Pirates of the Caribbean: On Stranger Tides',\n",
+       " '2': 'Gods and Generals',\n",
+       " '3': 'Winnie the Pooh',\n",
+       " '4': 110,\n",
+       " '5': 107,\n",
+       " '6': 'Avatar',\n",
+       " '7': 'The Lone Ranger',\n",
+       " '8': 1478,\n",
+       " '9': 'The Dark Knight',\n",
+       " '10': 'The Lone Ranger',\n",
+       " '11': 'Drama',\n",
+       " '12': 'Drama',\n",
+       " '13': 'Peter Jackson',\n",
+       " '14': 'Robert Rodriguez',\n",
+       " '15': 'Chris Hemsworth',\n",
+       " '16': 'Matt Damon',\n",
+       " '17': 'Action',\n",
+       " '18': 'K-19: The Widowmaker',\n",
+       " '19': 2015,\n",
+       " '20': 2014,\n",
+       " '21': 'Сентябрь',\n",
+       " '22': 450,\n",
+       " '23': 'Peter Jackson',\n",
+       " '24': 'Four By Two Productions',\n",
+       " '25': 'Midnight Picture Show',\n",
+       " '26':                                        original_title  vote_average\n",
+       " 0                                     The Dark Knight           8.1\n",
+       " 1                                  The Imitation Game           8.0\n",
+       " 2                                          Inside Out           8.0\n",
+       " 3                                        Interstellar           8.0\n",
+       " 4                                                Room           8.0\n",
+       " 5                            The Grand Budapest Hotel           7.9\n",
+       " 6                                         The Pianist           7.9\n",
+       " 7                             Guardians of the Galaxy           7.9\n",
+       " 8                                             Memento           7.9\n",
+       " 9                             The Wolf of Wall Street           7.9\n",
+       " 10                                          Inception           7.9\n",
+       " 11                                          Gone Girl           7.9\n",
+       " 12                                   12 Years a Slave           7.9\n",
+       " 13      The Lord of the Rings: The Return of the King           7.9\n",
+       " 14                                          Prisoners           7.8\n",
+       " 15                             The Fault in Our Stars           7.8\n",
+       " 16              Eternal Sunshine of the Spotless Mind           7.8\n",
+       " 17                                       The Prestige           7.8\n",
+       " 18  The Lord of the Rings: The Fellowship of the Ring           7.8}"
+      ]
+     },
+     "execution_count": 126,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# в конце можно посмотреть свои ответы к каждому вопросу\n",
+    "answers"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 116,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "SiRmHPl8VqAd"
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "26"
+      ]
+     },
+     "execution_count": 116,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "# и убедиться что ни чего не пропустил)\n",
+    "len(answers)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "uCfuTkRbVqAg"
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {
+    "colab": {},
+    "colab_type": "code",
+    "id": "Vwx3NrkSVqAl"
+   },
+   "outputs": [],
+   "source": []
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "metadata": {},
+   "outputs": [],
+   "source": []
+  }
+ ],
+ "metadata": {
+  "colab": {
+   "name": "Copy of [SF-DST] Movies IMBD v4.1 TEMPLATE.ipynb",
+   "provenance": []
+  },
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.8.3"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 1
+}
