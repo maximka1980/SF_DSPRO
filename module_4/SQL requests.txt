@@ -1,0 +1,212 @@
+### Задание 4.1 
+
+SELECT city, COUNT(airport_name) Qty 
+FROM dst_project.airports 
+GROUP BY 1 
+having COUNT(airport_name)>1 
+ORDER BY 2 DESC 
+
+### Задание 4.2
+
+#вопрос1 - 6
+SELECT COUNT(DISTINCT status) FROM dst_project.flights
+
+#вопрос2 - 58
+SELECT COUNT(status) FROM dst_project.flights WHERE status = 'Departed'
+
+#вопрос3 - 402
+SELECT COUNT(seat_no) FROM dst_project.seats WHERE aircraft_code = '773'
+
+#вопрос4 - 74227
+SELECT COUNT(*)
+FROM dst_project.flights
+WHERE (actual_arrival between '2017-04-01' AND '2017-09-01') AND (status = 'Arrived')
+
+### Задание 4.3
+
+#вопрос1 - 437
+SELECT COUNT(*) FROM dst_project.flights WHERE status = 'Cancelled'
+
+#вопрос2 - 
+
+SELECT 'Airbus', COUNT(*)
+FROM dst_project.aircrafts a
+WHERE a.model LIKE 'Airbus%'
+UNIOIN ALL
+SELECT 'Boeing', COUNT(*)
+FROM dst_project.aircrafts a
+WHERE a.model LIKE 'Boeing%'
+UNIOIN ALL
+SELECT 'Sukhoi', COUNT(*)
+FROM dst_project.aircrafts a
+WHERE a.model LIKE 'Sukhoi%'
+
+#вопрос3 - Europe/Asia
+SELECT timezone, COUNT(airport_code) FROM dst_project.airports GROUP BY timezone ORDER BY 2 DESC
+
+
+#вопрос4 - 157571
+SELECT f.flight_id,  
+(f.actual_arrival - f.scheduled_arrival) delta
+FROM dst_project.flights AS f WHERE f.actual_arrival IS NOT NULL
+ORDER BY 2 DESC
+
+### Задание 4.4
+
+#вопрос1 - 14.08.2016
+SELECT scheduled_departure FROM dst_project.flights ORDER BY 1 ASC LIMIT 1
+
+#вопрос2 - 530
+SELECT EXTRACT(EPOCH FROM AGE(f.scheduled_arrival, f.scheduled_departure))/60 delta, departure_airport, arrival_airport
+FROM dst_project.flights AS f WHERE f.scheduled_arrival IS NOT NULL OR f.scheduled_arrival IS NOT NULL
+ORDER BY 1 DESC LIMIT 1 
+
+#вопрос3 - DME -UUS
+SELECT EXTRACT(EPOCH FROM AGE(f.scheduled_arrival, f.scheduled_departure))/60 delta, departure_airport, arrival_airport
+FROM dst_project.flights AS f WHERE f.scheduled_arrival IS NOT NULL OR f.scheduled_arrival IS NOT NULL
+ORDER BY 1 DESC LIMIT 1 
+
+#вопрос4 - 128
+SELECT ROUND(avg(A.delta)) FROM
+(
+SELECT EXTRACT(EPOCH FROM AGE(f.scheduled_arrival, f.scheduled_departure))/60 delta, departure_airport, arrival_airport
+FROM dst_project.flights AS f WHERE f.scheduled_arrival IS NOT NULL OR f.scheduled_arrival IS NOT NULL
+ORDER BY 1 DESC
+) as A
+
+### Задание 4.5
+
+#вопрос1 - Economy 85
+SELECT DISTINCT B.fare_conditions, COUNT(*)
+FROM 
+(
+SELECT * FROM dst_project.aircrafts ac
+JOINdst_project.seats acs ON ac.aircraft_code = acs.aircraft_code WHERE ac.aircraft_code = 'SU9'
+) as B 
+GROUP BY 1
+ORDER BY 2 DESC LIMIT 1
+
+#вопрос2 - 3400
+SELECT * FROM dst_project.bookings ORDER BY 3 ASC LIMIT 1
+
+#вопрос3 - 2A
+SELECT bp.seat_no FROM dst_project.tickets t
+    JOINdst_project.boarding_passes bp ON bp.ticket_no = t.ticket_no 
+    WHERE t.passenger_id = '4313 788533'
+
+### 5. Предварительный анализ
+### Задание 5.1
+
+#вопрос1 - 486
+SELECT COUNT(*) 
+    FROM dst_project.flights f 
+    JOINdst_project.airports a ON a.airport_code = f.arrival_airport 
+    WHERE a.city = 'Anapa' AND date_part('Year',f.actual_arrival) = 2017
+    
+#вопрос2 - 127
+SELECT COUNT(*)  
+    FROM dst_project.flights f JOINdst_project.airports a ON a.airport_code = f.arrival_airport
+    WHERE a.city = 'Anapa' 
+    AND date_part('Year',f.actual_arrival)=2017 
+    AND date_part('Month',f.actual_arrival) IN (11,12,1,2)
+
+#вопрос3 - 1
+SELECT COUNT(*)  
+    FROM dst_project.flights f JOINdst_project.airports a ON a.airport_code = f.arrival_airport 
+    WHERE a.city = 'Anapa' AND f.status='Cancelled'
+
+#Воспро4 - 453
+SELECT COUNT(*) 
+    FROM dst_project.flights f JOINdst_project.airports a ON a.airport_code = f.departure_airport 
+    WHERE a.city = 'Anapa' AND f.arrival_airport NOT IN 
+        (SELECT DISTINCT f.arrival_airport 
+             FROM dst_project.flights f JOINdst_project.airports a ON a.airport_code = f.arrival_airport 
+             WHERE a.city = 'Moscow')
+        
+#вопрос5 -
+
+#общий запрос - в таком варианте не надо папрсить код аэропорта, аможно использовать город , 
+#важно для тех городов в которых много аэропортов
+SELECT model, qty FROM  
+(SELECT DISTINCT model, COUNT(*) over (partition by model)qty FROM dst_project.aircrafts ac JOIN dst_project.seats acs ON acs.aircraft_code = ac.aircraft_code ORDER BY 2 DESC
+) as A
+WHERE A.model in (SELECT DISTINCT model
+    FROM dst_project.flights f 
+    JOINdst_project.airports a ON a.airport_code = f.departure_airport 
+    JOINdst_project.aircrafts ac ON ac.aircraft_code = f.aircraft_code
+    WHERE a.city = 'Anapa')
+
+###собираем датасет
+
+WITH table_1 AS
+  (SELECT f.flight_id,
+          f.flight_no,
+          f.departure_airport,
+          f.arrival_airport,
+          f.actual_departure,
+          f.status,
+          a.aircraft_code
+   FROM dst_project.flights f
+   LEFT JOINdst_project.aircrafts a ON f.aircraft_code = a.aircraft_code), 
+   /* В таблице table_1 содержится общая информация о рейсах и самолетах. Даты вылета-прилета, код самолетах
+id рейса - уникальное значение для каждого рейса */ 
+   table_2 AS
+  (SELECT tf.flight_id,
+          COUNT(CASE
+                    WHEN tf.fare_conditions = 'Economy' THEN tf.fare_conditions
+                END) AS ticket_economy,
+          COUNT(CASE
+                    WHEN tf.fare_conditions = 'Comfort' THEN tf.fare_conditions
+                END) AS ticket_comfort,
+          COUNT(CASE
+                    WHEN tf.fare_conditions = 'Business' THEN tf.fare_conditions
+                END) AS ticket_bisiness
+   FROM dst_project.ticket_flights AS tf
+   GROUP BY 1), /* В таблице table_2 - информация о заполняемости мест по каждому классу, для каждого рейса */
+   
+   table_3 AS
+  (SELECT flight_id,
+          sum(amount) total_amount
+   FROM dst_project.ticket_flights
+   GROUP BY 1), /* В таблице table_3 - общая стоимость билетов на рейс */
+   
+   table_4 AS
+  (SELECT aircraft_code,
+          COUNT(DISTINCT seat_no) cnt_seats
+   FROM dst_project.seats
+   GROUP BY 1), /* В таблице table_4 - общее количество мест в самолете */
+   
+   table_5 AS
+  (SELECT f.flight_id,
+          (EXTRACT(EPOCH
+                   FROM f.actual_arrival) - EXTRACT(EPOCH
+                                                    FROM f.actual_departure)) / 60 / 60 AS fly_time,
+          EXTRACT(ISODOW
+                  FROM f.actual_departure) AS dow
+   FROM dst_project.flights AS f
+   GROUP BY 1) /* В таблице table_5 - время полета и день недели, когда совершен рейс */
+
+SELECT t1.flight_id,
+       t1.flight_no,
+       t1.departure_airport,
+       t1.arrival_airport,
+       t1.actual_departure,
+       t1.status,
+       t1.aircraft_code,
+       t2.ticket_economy,
+       t2.ticket_comfort,
+       t2.ticket_bisiness,
+       t3.total_amount,
+       t4.cnt_seats,
+       t5.fly_time,
+       t5.dow
+FROM table_1 t1
+LEFT JOINtable_2 t2 ON t1.flight_id = t2.flight_id
+LEFT JOINtable_3 t3 ON t1.flight_id = t3.flight_id
+LEFT JOINtable_4 t4 ON t1.aircraft_code = t4.aircraft_code
+LEFT JOINtable_5 t5 ON t1.flight_id = t5.flight_id
+WHERE departure_airport = 'AAQ'
+  AND (date_trunc('month', actual_departure) in ('2016-12-01',
+                                                    '2017-01-01',
+                                                    '2017-02-01'))
+  AND status NOT IN ('Cancelled')
