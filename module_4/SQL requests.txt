@@ -1,107 +1,107 @@
 ### Задание 4.1 
 
 SELECT city, COUNT(airport_name) Qty 
-FROM dst_project.airports 
-GROUP BY 1 
+  FROM dst_project.airports 
+ GROUP BY 1 
 HAVING COUNT(airport_name)>1 
-ORDER BY 2 DESC 
+ ORDER BY 2 DESC 
 
 ### Задание 4.2
 
 #вопрос1 - 6
 SELECT COUNT(DISTINCT status) 
-FROM dst_project.flights
+  FROM dst_project.flights
 
 #вопрос2 - 58
 SELECT COUNT(status) 
-FROM dst_project.flights 
-WHERE status = 'Departed'
+  FROM dst_project.flights 
+ WHERE status = 'Departed'
 
 #вопрос3 - 402
 SELECT COUNT(seat_no) 
-FROM dst_project.seats 
-WHERE aircraft_code = '773'
+  FROM dst_project.seats 
+ WHERE aircraft_code = '773'
 
 #вопрос4 - 74227
 SELECT COUNT(*)
-FROM dst_project.flights
-WHERE (actual_arrival BETWEEN '2017-04-01' 
-AND '2017-09-01') 
-AND (status = 'Arrived')
+  FROM dst_project.flights
+ WHERE (actual_arrival BETWEEN '2017-04-01' 
+   AND '2017-09-01') 
+   AND (status = 'Arrived')
 
 ### Задание 4.3
 
 #вопрос1 - 437
 SELECT COUNT(*) 
-FROM dst_project.flights 
-WHERE status = 'Cancelled'
+  FROM dst_project.flights 
+ WHERE status = 'Cancelled'
 
 #вопрос2 - 
 
 SELECT 'Airbus', COUNT(*)
-FROM dst_project.aircrafts a
-WHERE a.model LIKE 'Airbus%'
+  FROM dst_project.aircrafts a
+ WHERE a.model LIKE 'Airbus%'
 UNIOIN ALL
 SELECT 'Boeing', COUNT(*)
-FROM dst_project.aircrafts a
-WHERE a.model LIKE 'Boeing%'
+  FROM dst_project.aircrafts a
+ WHERE a.model LIKE 'Boeing%'
 UNIOIN ALL
 SELECT 'Sukhoi', COUNT(*)
-FROM dst_project.aircrafts a
-WHERE a.model LIKE 'Sukhoi%'
+  FROM dst_project.aircrafts a
+ WHERE a.model LIKE 'Sukhoi%'
 
 #вопрос3 - Europe/Asia
 SELECT timezone, COUNT(airport_code) 
-FROM dst_project.airports 
-GROUP BY timezone 
-ORDER BY 2 DESC
+  FROM dst_project.airports 
+ GROUP BY timezone 
+ ORDER BY 2 DESC
 
 
 #вопрос4 - 157571
-SELECT f.flight_id,  
-(f.actual_arrival - f.scheduled_arrival) delta
-FROM dst_project.flights AS f 
-WHERE f.actual_arrival IS NOT NULL
-ORDER BY 2 DESC
+SELECT f.flight_id, (f.actual_arrival - f.scheduled_arrival) delta
+  FROM dst_project.flights AS f 
+ WHERE f.actual_arrival IS NOT NULL
+ ORDER BY 2 DESC
 
 ### Задание 4.4
 
 #вопрос1 - 14.08.2016
 SELECT scheduled_departure 
-FROM dst_project.flights 
-ORDER BY 1 ASC LIMIT 1
+  FROM dst_project.flights 
+ ORDER BY 1 ASC 
+ LIMIT 1
 
 #вопрос2 - 530
 SELECT EXTRACT(EPOCH FROM AGE(f.scheduled_arrival, f.scheduled_departure))/60 delta, departure_airport, arrival_airport
-FROM dst_project.flights AS f 
-WHERE f.scheduled_arrival IS NOT NULL 
-OR f.scheduled_arrival IS NOT NULL
-ORDER BY 1 DESC 
-LIMIT 1 
+  FROM dst_project.flights AS f 
+ WHERE f.scheduled_arrival IS NOT NULL 
+    OR f.scheduled_arrival IS NOT NULL
+ ORDER BY 1 DESC 
+ LIMIT 1 
 
 #вопрос3 - DME -UUS
 SELECT EXTRACT(EPOCH FROM AGE(f.scheduled_arrival, f.scheduled_departure))/60 delta, departure_airport, arrival_airport
-FROM dst_project.flights AS f 
-WHERE f.scheduled_arrival IS NOT NULL 
-OR f.scheduled_arrival IS NOT NULL
-ORDER BY 1 DESC LIMIT 1 
+  FROM dst_project.flights AS f 
+ WHERE f.scheduled_arrival IS NOT NULL 
+    OR f.scheduled_arrival IS NOT NULL
+ ORDER BY 1 DESC LIMIT 1 
 
 #вопрос4 - 128
 SELECT ROUND(avg(A.delta)) 
-FROM
+  FROM
 (
 SELECT EXTRACT(EPOCH FROM AGE(f.scheduled_arrival, f.scheduled_departure))/60 delta, departure_airport, arrival_airport
-FROM dst_project.flights AS f 
-WHERE f.scheduled_arrival IS NOT NULL 
-OR f.scheduled_arrival IS NOT NULL
-ORDER BY 1 DESC
+  FROM dst_project.flights AS f 
+ WHERE f.scheduled_arrival IS NOT NULL 
+    OR f.scheduled_arrival IS NOT NULL
+ ORDER BY 1 DESC
 ) as A
 
 ### Задание 4.5
 
 #вопрос1 - Economy 85
 SELECT DISTINCT B.fare_conditions, COUNT(*)
-FROM 
+  FROM 
 (
 SELECT * FROM dst_project.aircrafts ac
 JOIN dst_project.seats acs ON ac.aircraft_code = acs.aircraft_code 
